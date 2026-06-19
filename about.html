@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Mu's Dispo</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Hi+Melody&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Architects Daughter', 'Hi Melody', cursive;
+    }
+
+    :root {
+      --white: #ffffff;
+      --black: #111010;
+      --gray-light: #f4f4f2;
+      --gray-mid: #e0dedd;
+      --gray-text: #999896;
+      --gray-muted: #c8c6c4;
+      --accent: #2a2a2a;
+      --folder-bg: #f0efed;
+      --folder-tab: #e4e3e0;
+      --folder-stroke: #d4d2cf;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 36px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      padding: 6px;
+      border: none;
+      background: none;
+      transition: opacity 0.2s;
+    }
+    .hamburger:hover { opacity: 0.5; }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--black);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .brand {
+      font-size: 40px;
+      letter-spacing: 0.01em;
+      color: var(--black);
+      text-decoration: none;
+      user-select: none;
+    }
+    .brand em {
+      font-style: italic;
+      color: var(--gray-text);
+    }
+
+    /* ── NAV DRAWER ── */
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--white);
+      border-left: 1px solid var(--gray-mid);
+      z-index: 99;
+      padding: 100px 36px 40px;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer a {
+      font-size: 20px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      text-decoration: none;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-light);
+      transition: color 0.2s;
+    }
+    .nav-drawer a:hover { color: var(--black); }
+    .nav-drawer .nav-footer {
+      margin-top: auto;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--gray-muted);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.08);
+      z-index: 98;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 140px 24px 80px;
+      gap: 48px;
+    }
+
+    /* ── PAGE TITLE ── */
+    .page-title {
+      font-size: 36px;
+      letter-spacing: 0.04em;
+      color: var(--black);
+      text-align: center;
+    }
+    .page-title em {
+      font-style: italic;
+      color: var(--gray-text);
+    }
+
+    /* ── ABOUT SECTION ── */
+    .about-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      max-width: 560px;
+      width: 100%;
+    }
+
+    .about-photo {
+      width: 260px;
+      height: 340px;
+      object-fit: cover;
+      border: 1px solid var(--gray-mid);
+      border-radius: 2px;
+      display: block;
+    }
+
+    /* placeholder shown if no image src */
+    .about-photo-placeholder {
+      width: 260px;
+      height: 340px;
+      background: var(--gray-light);
+      border: 1px solid var(--gray-mid);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-muted);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .about-bio {
+      width: 100%;
+      text-align: center;
+    }
+
+    .about-bio p {
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--gray-text);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 28px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--gray-light);
+    }
+    .footer-left {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--gray-muted);
+    }
+    .footer-right {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--gray-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .topbar { padding: 22px 24px; }
+      .brand { font-size: 30px; }
+      main { padding: 110px 16px 60px; gap: 36px; }
+      .page-title { font-size: 26px; }
+      .about-photo, .about-photo-placeholder { width: 200px; height: 260px; }
+      footer { padding: 20px 24px; flex-direction: column; gap: 8px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="nav-drawer" id="navDrawer">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="#">Film</a>
+    <a href="#">Video</a>
+    <a href="#">Contact</a>
+    <p class="nav-footer">© 2025 Mu's Dispo</p>
+  </nav>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <a href="index.html" class="brand">Mu's <em>Dispo</em></a>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- Page heading -->
+    <h1 class="page-title">Behind Mu's <em>Dispo</em></h1>
+
+    <!-- About content -->
+    <div class="about-container">
+
+      <!-- 
+        Replace the placeholder below with your actual photo:
+        
+        and remove the div.about-photo-placeholder
+      -->
+      <img src="images/film_photos/about_me/IMG_3484.JPG" alt="Mu" class="about-photo" />
+
+      <div class="about-bio">
+        <p>
+           welcome to musdispo, I call this page my local museum because I enjoy capturing moment
+           with friends, family and whatever else I'm doing
+          <br>
+           Check out my most recent work! <a href="https://www.instagram.com/musdispo/" target="_blank"> Mu's Dispo Instagram </a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-left">Mu's Dispo — film photography</span>
+    <span class="footer-right">© 2025</span>
+  </footer>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navDrawer = document.getElementById('navDrawer');
+    const overlay   = document.getElementById('overlay');
+
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      navDrawer.classList.toggle('open');
+      overlay.classList.toggle('show');
+    });
+
+    overlay.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      navDrawer.classList.remove('open');
+      overlay.classList.remove('show');
+    });
+  </script>
+
+</body>
+</html>
