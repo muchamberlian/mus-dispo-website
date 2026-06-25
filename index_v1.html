@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- head contains Metadata, CSS, and Links for Fonts-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mu's Dispo</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Hi+Melody&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Architects Daughter, Hi Melody, cursive;
+      
+    }
+
+    :root {
+      --white: #ffffff;
+      --black: #111010;
+      --gray-light: #f4f4f2;
+      --gray-mid: #e0dedd;
+      --gray-text: #999896;
+      --gray-muted: #c8c6c4;
+      --accent: #2a2a2a;
+      --folder-bg: #f0efed;
+      --folder-tab: #e4e3e0;
+      --folder-stroke: #d4d2cf;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 36px;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* hamburger */
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      padding: 6px;
+      border: none;
+      background: none;
+      transition: opacity 0.2s;
+    }
+    .hamburger:hover { opacity: 0.5; }
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--black);
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* brand */
+    .brand {
+      font-size: 40px;
+      letter-spacing: 0.01em;
+      color: var(--black);
+      user-select: none;
+    }
+    .brand em {
+      font-style: italic;
+      color: var(--gray-text);
+    }
+
+    /* ── NAV DRAWER ── */
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--white);
+      border-left: 1px solid var(--gray-mid);
+      z-index: 99;
+      padding: 100px 36px 40px;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer a {
+      font-size: 20px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      text-decoration: none;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-light);
+      transition: color 0.2s;
+    }
+    .nav-drawer a:hover { color: var(--black); }
+    .nav-drawer .nav-footer {
+      margin-top: auto;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--gray-muted);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.08);
+      z-index: 98;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.show { opacity: 1; pointer-events: all; }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 24px 80px;
+      gap: 64px;
+    }
+
+    .hero-label {
+      font-size: 20px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      font-weight: 300;
+    }
+
+    /* ── FOLDERS ── */
+    .folders {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .folder-wrap {
+      display: flex;
+      align-items: stretch;
+    }
+
+    .folder-divider {
+      width: 1px;
+      background: var(--gray-mid);
+      margin: 8px 0 0;
+      align-self: stretch;
+    }
+
+    .folder-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 32px;
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 4px;
+      position: relative;
+    }
+    .folder-item:hover { background: var(--gray-light); }
+    .folder-item:hover .folder-svg .folder-front { fill: #e8e7e4; }
+
+    /* folder SVG */
+    .folder-svg {
+      width: 72px;
+      height: 58px;
+      flex-shrink: 0;
+    }
+    .folder-svg .folder-back  { fill: var(--folder-tab);    stroke: var(--folder-stroke); stroke-width: 0.8; }
+    .folder-svg .folder-front { fill: var(--folder-bg);     stroke: var(--folder-stroke); stroke-width: 0.8; transition: fill 0.2s; }
+
+    .folder-name {
+      font-size: 20px;
+      letter-spacing: 0.1em;
+      color: var(--gray-text);
+      text-align: center;
+      font-weight: 300;
+    }
+
+    .folder-meta {
+      font-size: 14px;
+      letter-spacing: 0.07em;
+      color: var(--gray-muted);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 80px;
+    }
+
+    /* ── GALLERY OVERLAY ── */
+    .gallery-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--white);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .gallery-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0);
+    }
+
+    .gallery-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 36px;
+      border-bottom: 1px solid var(--gray-mid);
+      flex-shrink: 0;
+    }
+    .gallery-title {
+      font-size: 20px;
+      color: var(--black);
+    }
+    .gallery-close {
+      font-size: 20px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray-text);
+      cursor: pointer;
+      border: none;
+      background: none;
+      transition: color 0.2s;
+      padding: 6px;
+    }
+    .gallery-close:hover { color: var(--black); }
+
+    .gallery-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 36px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+
+    .gallery-placeholder {
+      background: var(--gray-light);
+      border: 1px solid var(--gray-mid);
+      aspect-ratio: 3/4;
+      border-radius: 2px;
+      display: flex;
+      align-items: flex-end;
+      padding: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .gallery-placeholder:hover { opacity: 0.75; }
+    .gallery-placeholder .ph-label {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--gray-muted);
+      text-transform: uppercase;
+    }
+    /* fake grain texture on placeholders */
+    .gallery-placeholder::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 28px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--gray-light);
+    }
+    /* Mus Dispo Labeling */
+    .footer-left {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--gray-muted);
+    }
+    /* 2025 Copyright Label */
+    .footer-right {
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--gray-muted);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .topbar { padding: 22px 24px; }
+      main { padding: 100px 16px 60px; gap: 48px; }
+      .folder-item { padding: 16px 20px; }
+      .gallery-grid { padding: 24px 20px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+      .gallery-topbar { padding: 20px 24px; }
+      footer { padding: 20px 24px; flex-direction: column; gap: 8px; align-items: flex-start; }
+    }
+  </style>
+</head>
+<!-- body contains the actual content of the page-->
+<body>
+
+  <!-- NAV DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <nav class="nav-drawer" id="navDrawer">
+    <a href="portfolio.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="#">Film</a>
+    <a href="#">Video</a>
+    <a href="#">Contact</a>
+    <p class="nav-footer">© 2025 Mu's Dispo</p>
+  </nav>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+     <div class="brand">Mu's <em>Dispo</em></div>
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <!-- GALLERY OVERLAY -->
+  <div class="gallery-overlay" id="galleryOverlay">
+    <div class="gallery-topbar">
+      <span class="gallery-title" id="galleryTitle">2024</span>
+      <button class="gallery-close" id="galleryClose">← close</button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <!-- MAIN -->
+  <main>
+    <p class="hero-label"> Your Local Museum</p>
+
+    <div class="folders">
+
+      <div class="folder-wrap">
+        <div class="folder-item" data-year="2024" data-count="35" data-label="35 frames">
+            <img src="images/folder icon.png" alt="folder" class="folder-svg">
+            <span class="folder-name">'24 Photo Gallery</span>
+            <span class="folder-meta">30 frames</span>
+        </div>
+        <div class="folder-divider"></div>
+      </div>
+
+      <div class="folder-wrap">
+        <div class="folder-item" data-year="2025" data-count="48" data-label="48 frames">
+         <img src="images/folder icon.png" alt="folder" class="folder-svg">
+          <span class="folder-name">'25 Photo Gallery</span>
+          <span class="folder-meta">29 frames</span>
+        </div>
+        <div class="folder-divider"></div>
+      </div>
+
+      <div class="folder-wrap">
+        <div class="folder-item" data-year="2026" data-count="22" data-label="22 frames">
+          <img src="mus-dispo-website/folder icon.png" alt="folder" class="folder-svg">
+          <span class="folder-name">'26 Photo Gallery</span>
+          <span class="folder-meta">18 frames</span>
+        </div>
+        <div class="folder-divider"></div>
+      </div>
+
+      <div class="folder-wrap">
+        <div class="folder-item" data-year="video" data-count="8" data-label="film & reel">
+         <img src="images/folder icon.png" alt="folder" class="folder-svg">
+          <span class="folder-name">Video</span>
+          <span class="folder-meta">film & reels<br>videography</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-left">Mu's Dispo — film photography</span>
+    <span class="footer-right">© 2025</span>
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // ── Hamburger / Nav Drawer ──
+    const hamburger = document.getElementById('hamburger');
+    const navDrawer = document.getElementById('navDrawer');
+    const overlay   = document.getElementById('overlay');
+
+    function toggleNav() {
+      const open = navDrawer.classList.toggle('open');
+      hamburger.classList.toggle('open', open);
+      overlay.classList.toggle('show', open);
+    }
+
+    hamburger.addEventListener('click', toggleNav);
+    overlay.addEventListener('click', toggleNav);
+
+    // ── Gallery Overlay ──
+    const galleryOverlay = document.getElementById('galleryOverlay');
+    const galleryTitle   = document.getElementById('galleryTitle');
+    const galleryGrid    = document.getElementById('galleryGrid');
+    const galleryClose   = document.getElementById('galleryClose');
+
+    document.querySelectorAll('.folder-item').forEach(folder => {
+      folder.addEventListener('click', () => {
+        const year  = folder.dataset.year;
+        const count = parseInt(folder.dataset.count) || 8;
+        const label = folder.dataset.label;
+
+        galleryTitle.textContent = year === 'video' ? 'Video — film & reel' : year;
+
+        // build placeholder grid
+        galleryGrid.innerHTML = '';
+
+        const photos = galleryPhotos[year] || [];
+
+        if (photos.length === 0) {
+          galleryGrid.innerHTML = '<p style="color: var(--gray-text); font-size: 12px; letter-spacing: 0.1em;">no photos yet</p>';
+          return;
+        }
+
+        photos.forEach((src, i) => {
+          const img = document.createElement('img');
+          img.src = src;
+          img.alt = `${year} photo ${i + 1}`;
+          img.loading = 'lazy';
+          img.style.cssText = 'width: 100%; aspect-ratio: 3/4; object-fit: cover; border-radius: 2px; cursor: pointer; transition: opacity 0.2s;';
+          img.onmouseover = () => img.style.opacity = '0.8';
+          img.onmouseout  = () => img.style.opacity = '1';
+          galleryGrid.appendChild(img);
+        });
+
+        galleryOverlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    const galleryPhotos = {
+    '2024': [
+        // towson's hoco
+      'mus-dispo-website/2024/000067830033.jpg',
+      'mus-dispo-website/2024/000067820005.jpg',
+      'mus-dispo-website/2024/000067820011.jpg',
+      'mus-dispo-website/2024/000067820018.jpg',
+      'mus-dispo-website/2024/000067830030.jpg',
+      'mus-dispo-website/2024/000067830034.jpg',
+
+      // lil meech's birthday
+      'mus-dispo-website/2024/000030120033.jpg',
+      'mus-dispo-website/2024/000030130005.jpg',
+      'mus-dispo-website/2024/000030150032.jpg',
+      'mus-dispo-website/2024/000030130024.jpg',
+      'mus-dispo-website/2024/000030150023.jpg',
+      'mus-dispo-website/2024/000030150033.jpg',
+
+      //john's birthday
+      'mus-dispo-website/2024/000024670013.jpg',
+      'mus-dispo-website/2024/000024670004.jpg',
+      'mus-dispo-website/2024/000024670027.jpg',
+      'mus-dispo-website/2024/000024670012.jpg',
+      'mus-dispo-website/2024/000024670018.jpg',
+      'mus-dispo-website/2024/000024670023.jpg',
+
+      //SJ's birthday
+      'mus-dispo-website/2024/000061320003.jpg',
+      'mus-dispo-website/2024/000061320020.jpg',
+      'mus-dispo-website/2024/000061320025.jpg',
+      'mus-dispo-website/2024/000061320028.jpg',
+      'mus-dispo-website/2024/000061320029.jpg',
+      'mus-dispo-website/2024/000061320036.jpg',
+
+      //hoco addition
+      'mus-dispo-website/2024/000067830022.jpg',
+      'mus-dispo-website/2024/000067820021.jpg',
+      'mus-dispo-website/2024/000067820024.jpg',
+      'mus-dispo-website/2024/000067820025.jpg',
+      'mus-dispo-website/2024/000067820029.jpg',
+      'mus-dispo-website/2024/000067830016.jpg',
+
+    ],
+    '2025': [
+     
+      // wedding photoshoot
+      'mus-dispo-website/2025/000001140004.jpg',
+      'mus-dispo-website/2025/000001140031.jpg',
+      'mus-dispo-website/2025/000001140007.jpg',
+      'mus-dispo-website/2025/000001140023.jpg',
+      'mus-dispo-website/2025/000001140011.jpg',
+      'mus-dispo-website/2025/000001140024.jpg',
+
+      // quan's bday photoshoot
+      'mus-dispo-website/2025/000083240035.jpg',
+      'mus-dispo-website/2025/000083230018.jpg',
+      'mus-dispo-website/2025/000083230019.jpg',
+      'mus-dispo-website/2025/000083230031.jpg',
+      'mus-dispo-website/2025/000083240015.jpg',
+      'mus-dispo-website/2025/000083240026.jpg',
+
+      // las gidi
+      'mus-dispo-website/2025/000095820026.jpg',
+      'mus-dispo-website/2025/000095840007.jpg',
+      'mus-dispo-website/2025/000095840026.jpg',
+      'mus-dispo-website/2025/000095830002.jpg',
+      'mus-dispo-website/2025/000095830008.jpg',
+      'mus-dispo-website/2025/000095840019.jpg',
+      
+      // ashley's wedding shower
+      'mus-dispo-website/2025/000001150031.jpg',
+      'mus-dispo-website/2025/000001150027.jpg',
+      'mus-dispo-website/2025/000001150035.jpg',
+      'mus-dispo-website/2025/000001130017.jpg',
+      'mus-dispo-website/2025/000001130018.jpg',
+      'mus-dispo-website/2025/000001130020.jpg',
+    
+      // liz's birthday
+      'mus-dispo-website/2025/000043140017.jpg',
+      'mus-dispo-website/2025/000043140028.jpg',
+      'mus-dispo-website/2025/000043140020.jpg',
+      'mus-dispo-website/2025/000043140019.jpg',
+      'mus-dispo-website/2025/000043140026.jpg',
+
+    ],
+    '2026': [
+       //car photoshoot, file location is in 2025
+      'mus-dispo-website/2025/000022330010.jpg',
+      'mus-dispo-website/2025/000022330003.jpg',
+      'mus-dispo-website/2025/000022340005.jpg',
+      'mus-dispo-website/2025/000022340025.jpg',
+      'mus-dispo-website/2025/000022340030.jpg',
+      'mus-dispo-website/2025/000022340035.jpg',
+      
+      // cebu wedding
+      'mus-dispo-website/2026/IMG_5363.JPG',
+      'mus-dispo-website/2026/IMG_5364.JPG',
+      'mus-dispo-website/2026/IMG_5375.JPG',
+      'mus-dispo-website/2026/IMG_5382.JPG',
+      'mus-dispo-website/2026/IMG_5384.JPG',
+      'mus-dispo-website/2026/IMG_5403.JPG',
+
+      // FREEWRLD Photoshoot
+      'mus-dispo-website/2026/IMG_5611.JPG',
+      'mus-dispo-website/2026/IMG_5617.JPG',
+      'mus-dispo-website/2026/IMG_5620.JPG',
+      'mus-dispo-website/2026/IMG_5633 2.jpg',
+      'mus-dispo-website/2026/IMG_5639.JPG',
+      'mus-dispo-website/2026/IMG_5649.JPG',
+
+
+    ],
+    'video': [
+      // leave empty for now, we'll handle video separately
+    ]
+};
+
+    galleryClose.addEventListener('click', () => {
+      galleryOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+
+    // close gallery on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        galleryOverlay.classList.remove('open');
+        document.body.style.overflow = '';
+        if (navDrawer.classList.contains('open')) toggleNav();
+      }
+    });
+  </script>
+
+</body>
+</html>
