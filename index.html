@@ -144,7 +144,61 @@ button{font:inherit;color:inherit}
   border:8px solid #fff;border-radius:4px;
   box-shadow:0 4px 14px rgba(0,0,0,.25);
 }
+/* ---------- Menu (top right) ---------- */
+.welcome{padding-left:68px;padding-right:68px}
+.menu-wrap{position:absolute;top:12px;right:12px;z-index:5}
+.menu-btn{
+  width:44px;height:44px;padding:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--paper);border:1px solid rgba(0,0,0,.18);border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.menu-btn svg{width:20px;height:20px}
+.menu-btn:hover,.menu-btn[aria-expanded="true"]{background:var(--bar)}
+.menu{
+  position:absolute;top:52px;right:0;min-width:176px;padding:4px;
+  background:var(--paper);border:1px solid rgba(0,0,0,.18);border-radius:10px;
+  box-shadow:0 10px 24px rgba(0,0,0,.25);
+}
+.menu-item{
+  width:100%;min-height:44px;padding:0 12px;border:0;border-radius:6px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:transparent;cursor:pointer;
+  font:700 14px var(--mono);color:var(--ink);text-align:left;text-decoration:none;
+}
+.menu-item:hover,.menu-item:focus-visible{background:var(--ink);color:#fff}
+.out-icon{flex:none;width:12px;height:12px}
+.menu-btn:focus-visible,.menu-item:focus-visible,.pill:focus-visible{
+  outline:3px solid var(--purple);outline-offset:2px;
+}
+
+/* ---------- About window (shares the folder window) ---------- */
+.win.about-win{height:auto;max-height:100%;width:min(640px,100%)}
+.win.about-win .status{display:none}
+.about{display:flex;align-items:flex-start;gap:24px;padding:8px}
+.about-photo{
+  flex:none;width:150px;height:200px;
+  background:var(--bar);border:6px solid #fff;border-radius:6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.about-text{flex:1;min-width:0}
+.about-text h3{margin:0 0 12px;font:400 30px/1.15 var(--marker)}
+.about-text p{margin:0 0 20px;font-size:15px;line-height:1.6}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pill{
+  min-height:44px;padding:0 20px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font:700 14px var(--mono);text-decoration:none;
+  border:2px solid var(--purple);
+}
+.pill.solid{background:var(--purple);color:#fff}
+.pill.solid:hover{background:var(--purple-deep);border-color:var(--purple-deep)}
+.pill.line{background:transparent;color:var(--purple-deep)}
+.pill.line:hover{background:var(--purple);color:#fff}
+
 @media (max-width:560px){
+  .about{flex-direction:column;align-items:center;gap:18px;padding:4px}
+  .about-text{width:100%}
   .viewer{gap:6px}
   .body{padding:12px}
   .grid{grid-template-columns:repeat(2,1fr);gap:10px}
@@ -152,6 +206,31 @@ button{font:inherit;color:inherit}
 </style>
 </head>
 <body>
+
+<div class="menu-wrap" id="menu-wrap">
+  <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+  <div class="menu" id="menu" hidden>
+    <button class="menu-item" id="menu-about" type="button">About</button>
+    <a class="menu-item" href="mailto:lawalm1999@gmail.com">Contact</a>
+    <a class="menu-item" href="https://www.instagram.com/musdispo/" target="_blank" rel="noopener noreferrer" aria-label="Instagram (opens in a new tab)">Instagram <svg class="out-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 2.5h6v6M9.5 2.5l-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  </div>
+</div>
+
+<template id="about-tpl">
+  <div class="about">
+    <div class="about-photo" aria-hidden="true"></div>
+    <div class="about-text">
+      <h3>Hi, I'm Mu</h3>
+      <p>Film photographer from Prince George's County, Maryland. I shoot fashion, street, creative, photoshoots along with events for brands, weddings, birthdays within the DMV region. My goal is to showcase talent that we don't often see and deserve their recognition.</p>
+      <div class="pills">
+        <a class="pill solid" href="mailto:lawalm1999@gmail.com">Contact</a>
+        <a class="pill line" href="https://www.instagram.com/musdispo/" target="_blank" rel="noopener noreferrer" aria-label="Instagram (opens in a new tab)">Instagram <svg class="out-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 2.5h6v6M9.5 2.5l-7 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+    </div>
+  </div>
+</template>
 
 <h1 class="welcome">Welcome to Mu’s Disposable’s</h1>
 
@@ -321,6 +400,8 @@ function openFolder(folder, trigger) {
 function closeFolder() {
   scrim.hidden = true;
   document.body.classList.remove('locked');
+  win.classList.remove('about-win');
+  $('#close').setAttribute('aria-label', 'Close folder');
   if (state.trigger) state.trigger.focus();
   state.folder = null; state.index = null;
 }
@@ -412,11 +493,47 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowRight') step(1);
   }
   if (e.key === 'Tab') {                       /* keep focus inside the open window */
-    const items = [...win.querySelectorAll('button')].filter((b) => !b.hidden && !b.closest('[hidden]'));
+    const items = [...win.querySelectorAll('button, a[href]')].filter((b) => !b.hidden && !b.closest('[hidden]'));
     const first = items[0], last = items[items.length - 1];
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
+});
+
+/* ---------- About window ---------- */
+function openAbout(trigger) {
+  state.folder = null; state.index = null; state.trigger = trigger;
+  win.classList.add('about-win');
+  $('#win-title').textContent = 'About';
+  $('#close').setAttribute('aria-label', 'Close About');
+  $('#back').hidden = true;
+  $('#status').textContent = '';
+  body.className = 'body';
+  body.replaceChildren($('#about-tpl').content.cloneNode(true));
+  scrim.hidden = false;
+  document.body.classList.add('locked');
+  $('#close').focus();
+}
+
+/* ---------- Menu ---------- */
+const menuWrap = $('#menu-wrap'), menuBtn = $('#menu-btn'), menu = $('#menu');
+function setMenu(open) {
+  menu.hidden = !open;
+  menuBtn.setAttribute('aria-expanded', String(open));
+}
+menuBtn.addEventListener('click', () => setMenu(menu.hidden));
+$('#menu-about').addEventListener('click', () => openAbout(menuBtn));
+menu.addEventListener('click', (e) => {
+  const item = e.target.closest('a, button');
+  if (!item) return;
+  setMenu(false);
+  if (item.tagName === 'A') menuBtn.focus();    /* About moves focus into its window instead */
+});
+document.addEventListener('click', (e) => {
+  if (!menu.hidden && !menuWrap.contains(e.target)) setMenu(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !menu.hidden) { setMenu(false); menuBtn.focus(); }
 });
 </script>
 </body>
